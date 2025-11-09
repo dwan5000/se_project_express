@@ -115,7 +115,7 @@ const deleteLikes = (req, res) => {
     });
 };
 
-updateItem = (req, res) => {
+const updateItem = (req, res) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
 
