@@ -24,6 +24,30 @@ const createItem = (req, res) => {
     });
 };
 
+const likeItem = (req, res) => {
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => {
+      if (!item) {
+        return res.status(404).send({ message: "Clothing item not found" });
+      }
+      return res.status(200).send({ data: item });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID" });
+      }
+      return res.status(404).send({ message: err.message });
+    });
+};
+
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
@@ -33,12 +57,36 @@ const deleteItem = (req, res) => {
       if (!item) {
         return res.status(404).send({ message: "Clothing item not found" });
       }
-      return res.status(204).send({ data: item });
+      return res.status(200).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res.status(200).send({ message: "Invalid item ID" });
+        return res.status(400).send({ message: "Invalid item ID" });
+      }
+      return res.status(404).send({ message: err.message });
+    });
+};
+
+const deleteLikes = (req, res) => {
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => {
+      if (!item) {
+        return res.status(404).send({ message: "Clothing item not found" });
+      }
+      return res.status(200).send({ data: item });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID" });
       }
       return res.status(404).send({ message: err.message });
     });
@@ -73,4 +121,6 @@ module.exports = {
   getItems,
   deleteItem,
   updateItem,
+  likeItem,
+  deleteLikes,
 };
